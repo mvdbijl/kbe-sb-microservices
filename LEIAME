@@ -1,0 +1,99 @@
+./filebeat/filebeat.docker.yml
+-rw-r--r-- 1 root root ./filebeat/filebeat.docker.yml
+
+start minikube
+minikube start --kubernetes-version=v1.26.0
+
+cd /home/meindert/springspace/kbe-sb-microservices/k8s-scripts
+
+kubectl create deployment mysql --image=mysql:5.7 --dry-run=client -o=yaml > mysql-deployment2.yml
+
+## add root password and database name to output file
+
+kubectl apply -f mysql-deployment.yml
+
+kubectl create service clusterip mysql --tcp=3306:3306 --dry-run=client -o=yaml > mysql-service2.yml
+
+kubectl apply -f mysql-service.yml
+
+kubectl get all
+
+
+kubectl create deployment jms --image=vromero/activemq-artemis --dry-run=client -o=yaml > jms-deployment2.yml
+
+kubectl apply -f jms-deployment.yml
+
+kubectl create service clusterip jms --tcp=8161:8161 --tcp=61616:61616 --dry-run=client -o=yaml > jsm-service2.yml
+
+kubectl apply -f jms-service.yml
+
+kubectl create deployment jms --image=springframeworkguru/kbe-brewery-inventory-service --dry-run=client -o=yaml > inventory-deployment2.yml
+
+kubectl apply -f inventory-deployment.yml
+
+kubectl create service clusterip inventory-service --tcp=8082:8082 --dry-run=client -o=yaml > inventory-service2.yml
+
+kubectl apply -f inventory-service.yml
+
+Use gateway service as ingress:
+
+kubectl create service nodeport gateway --tcp=9090:9090 --dry-run=client -o=yaml > gateway-service2.yml
+
+
+find the nodeport (node) ip:
+kubectl get nodes -o wide
+gives the IP 192.168.49.2 mapped to mysite.local
+
+access on port:
+kubectl get svc
+NAME                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)              AGE
+service/gateway              NodePort    10.109.14.134    <none>        9090:31224/TCP       141m
+                                                                             ^^^^^
+http://mysite.local:31224/api/v1/beer/
+
+ALL:
+kubectl apply -f mysql-deployment.yml
+kubectl apply -f mysql-service.yml
+kubectl apply -f jms-deployment.yml
+kubectl apply -f jms-service.yml
+kubectl apply -f inventory-deployment.yml
+kubectl apply -f inventory-service.yaml
+kubectl apply -f inventory-failover-deployment.yml
+kubectl apply -f inventory-failover-service.yml
+kubectl apply -f beer-service-deployment.yml
+kubectl apply -f beer-service.yml
+kubectl apply -f order-service-deployment.yml
+kubectl apply -f order-service.yml
+
+kubectl apply -f gateway-service-deployment.yml
+kubectl apply -f gateway-service.yml
+
+kubectl apply -f elasticsearch-deployment.yml
+kubectl apply -f elasticsearch-service.yml
+
+kubectl apply -f kibana-deployment.yml
+kubectl apply -f kibana-service.yml
+
+kubectl apply -f filebeat-kubernetes.yaml
+
+
+kubectl get pods
+kubectl logs gateway-6d44b685fb-k5sl8
+kubectl describe pod beer-service-58bc6c479-rdmpl
+
+OR:
+for i in `ls *.yml`; do kubectl delete -f $i; done
+for i in `ls *.yml`; do kubectl apply -f $i; done
+
+
+# kibana service is a nodeport service for external access:
+http://mysite.local:31064/
+
+CrashLoopBackOff is a Kubernetes state representing a restart loop
+steps:
+- check pod logs
+- describe pod
+
+The OOMKilled status in Kubernetes, flagged by exit code 137, signifies that the Linux Kernel has halted a container because it has surpassed its allocated memory limit.
+
+

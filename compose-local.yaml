@@ -54,9 +54,9 @@ services:
     beer-service:
         image: springframeworkguru/kbe-brewery-beer-service
         ports:
-            - 8080:8080
+            - 8079:8080
         depends_on:
-            - inventory
+            - inventory-service
             - jms
         restart: on-failure
         environment:
@@ -92,7 +92,7 @@ services:
         ports:
             - 9090:9090
         depends_on:
-            - inventory
+            - inventory-service
             - beer-service
             - order-service
             - inventory-failover

@@ -20,8 +20,17 @@ spec:
       containers:
       - image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
         name: elasticsearch
-        resources: {}
         env:
           - name: discovery.type
             value: single-node
+          - name: ES_JAVA_OPTS
+            value: -Xms2g -Xmx2g
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: "2"
+          limits:
+            memory: 4Gi
+
+
 status: {}
